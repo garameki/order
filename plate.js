@@ -36,15 +36,23 @@ function fNew() {
 			gLeft = Number(gElement.style.left.match(/[-]?\d+(?:\.\d+)?/)[0]);
 			gTop = Number(gElement.style.top.match(/[-]?\d+(?:\.\d+)?/)[0]);
 
-
 		}
 print2(gXDown,gYDown);
 
 		conn.sortZIndex(event.target);
+		conn.target = event.target;
+		connectNone.call(conn);
 		
 	},false);
 	element.addEventListener('mouseup',(event)=>{
 		gElement = void 0;
+
+		if(conn.target != void 0) {
+			conn.decorateClearCandidate();
+			conn.funcConnect();
+			conn.funcRearrange();
+			conn.target = void 0;/*ドラッグ中のnode*/
+		}
 
 	},false);
 	return element;
