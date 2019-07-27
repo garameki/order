@@ -10,7 +10,8 @@ re = new RegExp("[-]?\\d+(\\.\\d+)?");
 const Connection = function(parent) {
 
 	this.parent = parent;
-	this.target = void 0;/*いまドラッグしているnode*/
+	this.elementClicked = void 0;/*いまドラッグしているnode*/
+	
 	this.candidate = void 0;/*nearestで選択されたnode つまり、結合候補*/
 	this.maxDistance = 50;/*この距離以内ならば結合*/
 	this.funcConnect = connectNone;
@@ -58,8 +59,8 @@ Connection.prototype.connectNodeNextTo = function(node,front) {
 Connection.prototype.nearest = function() {
 	if(this.parent.children.length > 1) {
 		/*他のノードがある場合のみ一番近くのノードを光らせる*/
-		const top = this.nearestTop(this.target);
-		const bottom = this.nearestBottom(this.target);
+		const top = this.nearestTop();
+		const bottom = this.nearestBottom();
 		if(top.distance > bottom.distance) {
 			if(bottom.distance < this.maxDistance) {
 				this.replaceCandidate(bottom.node);
@@ -88,18 +89,21 @@ Connection.prototype.nearest = function() {
 		}
 	}
 };
-Connection.prototype.nearestTop = function(target) {
-	const xTarget = target.offsetLeft + target.clientWidth / 2;
-	const yTarget = target.offsetTop + target.clientHeight;
+/*「クリックされたツリー」の最下段と「その相手」の最上段*/
+Connection.prototype.nearestTop = function() {
+	const myHead = getHead(this.elementClicked);
+	const myTale = getTale(this.elementClicked);
+	const myX = myTale.offsetLeft + myTale.clientWidth / 2;
+	const myY = myTale.offsetTop + myTale.clientHeight;
 	let xx,yy,dist;
 	let candidate = void 0;
 	let min = 10000000000;
 	const heads = getHeads.call(this);
 	for(let node of heads) {
-		if(node != target) {
+		if(node != myHead) {
 			xx = node.offsetLeft + node.clientWidth / 2;
 			yy = node.offsetTop;
-			dist = Math.sqrt((xx - xTarget) * (xx - xTarget) + (yy - yTarget) * (yy - yTarget));
+			dist = Math.sqrt((xx - myX) * (xx - myX) + (yy - myY) * (yy - myY));
 			if(dist < min) {
 				min = dist;
 				candidate = node;
@@ -111,18 +115,21 @@ Connection.prototype.nearestTop = function(target) {
 		distance : min
 	};
 };
-Connection.prototype.nearestBottom = function(target) {
-	const xTarget = /*Number(target.style.left.match(re)[0])*/target.offsetLeft + target.clientWidth / 2;
-	const yTarget = /*Number(target.style.top.match(re)[0]) +*/ target.offsetTop;
+/*「クリックされたツリー」の最上段と「その相手ツリー」の最下段*/
+Connection.prototype.nearestBottom = function() {
+	const myTale = getTale(this.elementClicked);
+	const myHead = getHead(this.elementClicked);
+	const myX = myHead.offsetLeft + myHead.clientWidth / 2;
+	const myY = myHead.offsetTop;
 	let xx,yy,dist;
 	let candidate = void 0;
 	let min = 10000000000;
-	const nn = this.parent.children.length;
-	for(let node of this.parent.children) {
-		if(node != target) {
-			xx = /*Number(node.style.left.match(re)[0]) +*/node.offsetLeft +  node.clientWidth / 2;
-			yy = /*Number(node.style.top.match(re)[0]) +*/ node.offsetTop + node.clientHeight;
-			dist = Math.sqrt((xx - xTarget) * (xx - xTarget) + (yy - yTarget) * (yy - yTarget));
+	const tales = getTales.call(this);
+	for(let node of tales) {
+		if(node != myTale) {
+			xx = node.offsetLeft +  node.clientWidth / 2;
+			yy = node.offsetTop + node.clientHeight;
+			dist = Math.sqrt((xx - myX) * (xx - myX) + (yy - myY) * (yy - myY));
 			if(dist < min) {
 				min = dist;
 				candidate = node;
@@ -147,17 +154,35 @@ Connection.prototype.decorateCandidateTop = function() {
 Connection.prototype.decorateCandidateBottom = function() {
 	this.candidate.style.borderBottom = 'solid 1px red';
 };
+/*targetが所属するツリーを前にする*/
 Connection.prototype.sortZIndex = function(target) {
-	/*targetを一番前に出す。そのほかの前後関係はそのまま*/
 	const aa = [ ];
 	let zindex,max = -100000;
 	for(let node of this.parent.children) {
 		zindex = Number(node.style.zIndex);
 		if(zindex > max) max = zindex;
 	}
-	target.style.zIndex = (max + 1).toString();
-	print1(max);
-
+	const mm = (++max).toString();
+	target = getHead(target);
+	target.style.zIndex = mm;
+	target = target.nextNode;
+	while(target != void 0) {
+		target.style.zIndex = mm;
+		target = target.nextNode;
+	}
+};
+/*クリックされたツリーのみを成立*/
+Connection.prototype.arrangeTreeClicked = function() {
+	let target = this.elementClicked;
+	let sumHeight = target.offsetHeight;
+	target = target.nextNode;
+	while(target != void 0) {
+		console.log(target.innerText);
+		target.style.left = this.elementClicked.style.left.match(re)[0]+ 'px';
+		target.style.top = (Number(this.elementClicked.style.top.match(re)[0])-target.originY + this.elementClicked.originY + sumHeight).toString() + 'px';
+		sumHeight += target.offsetHeight;
+		target = target.nextNode;
+	}
 };
 
 
@@ -166,8 +191,7 @@ function rearrangeTop() {
 
 	/*先頭を取り出す*/
 	const heads = getHeads.call(this);
-	/*this.targetの先頭は？*/
-	const head = getHead(this.target);
+	const head = getHead(this.elementClicked);
 	let sumHeight,base;
 	for(let node of heads) {
 		this.accompany(node);/*確認*/
@@ -201,8 +225,7 @@ function rearrangeBottom() {
 
 	/*先頭を取り出す*/
 	const heads = getHeads.call(this);
-	/*this.targetの先頭は？*/
-	const head = getHead(this.target);
+	const head = getHead(this.elementClicked);
 	let sumHeight;
 	for(let node of heads) {
 		this.accompany(node);
@@ -218,35 +241,32 @@ function rearrangeBottom() {
 	console.log('rearrange');
 };
 
-/*結合２種類、分離のみ1種類*/
+/*ツリーの結合と分離関係*/
 function connectNone() {
-	console.log('none',this);
-	/*前にいたツリーから離脱*/
-	if(this.target.frontNode != void 0) this.target.frontNode.nextNode = this.target.nextNode;
-	if(this.target.nextNode != void 0) this.target.nextNode.frontNode = this.target.frontNode;
-	this.target.frontNode = void 0;
-	this.target.nextNode = void 0;
+	/*前にいたリストから離脱*/
+	const me = this.elementClicked;
+	if(me.frontNode != void 0) me.frontNode.nextNode = void 0;
+	me.frontNode = void 0;
 };
 function connectTop() {
-	console.log('top',this);
-	/*新しいツリーの先頭に挿入*/
-	this.candidate.frontNode = this.target;
-	this.target.nextNode = this.candidate;
-	this.target.frontNode = void 0;
+	/*新しいリストの先頭に挿入*/
+	const myTale = getTale(this.elementClicked);
+	this.candidate.frontNode = myTale;
+	myTale.nextNode = this.candidate;
 
 };
 function connectBottom() {
-	console.log('bottom',this);
-	/*新しいツリーに挿入*/
-	this.target.frontNode = this.candidate;
-	this.target.nextNode = this.candidate.nextNode;
-	if(this.candidate.nextNode != void 0) this.candidate.nextNode.frontNode = this.target;
-	this.candidate.nextNode = this.target;
+	/*新しいリストに挿入*/
+	const myHead = getHead(this.elementClicked);
+	myHead.frontNode = this.candidate;
+	this.candidate.nextNode = myHead;
 
 };
+
+/*ツリー探索関係*/
 function getHeads() {
-	/*各ツリーの先頭を取り出す*/
-	const head = [ ];
+	/*各リストの先頭を取り出す*/
+	const heads = [ ];
 	let target;
 	for(let node of this.parent.children) {
 		target = node;
@@ -254,13 +274,32 @@ function getHeads() {
 			console.log(target.innerText);
 			target = target.frontNode;
 		}
-		if(head.indexOf(target) == -1) head.push(target);
+		if(heads.indexOf(target) == -1) heads.push(target);
 	}
-	return head;
+	return heads;
 };
 function getHead(element) {
-	/*elementの所属するツリーの先頭を返す*/
+	/*elementの所属するリストの先頭を返す*/
 	let target = element;
 	while(target.frontNode != void 0) target = target.frontNode;
+	return target;
+};
+function getTales() {
+	/*各リストの先頭を取り出す*/
+	const tales = [ ];
+	let target;
+	for(let node of this.parent.children) {
+		target = node;
+		while(target.nextNode != void 0) {
+			target = target.nextNode;
+		}
+		if(tales.indexOf(target) == -1) tales.push(target);
+	}
+	return tales;
+};
+function getTale(element) {
+	/*elementの所属するリストの最後尾を返す*/
+	let target = element;
+	while(target.nextNode != void 0) target = target.nextNode;
 	return target;
 };

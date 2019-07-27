@@ -39,19 +39,19 @@ function fNew() {
 		}
 print2(gXDown,gYDown);
 
+		conn.elementClicked = event.target;
 		conn.sortZIndex(event.target);
-		conn.target = event.target;
 		connectNone.call(conn);
 		
 	},false);
 	element.addEventListener('mouseup',(event)=>{
 		gElement = void 0;
 
-		if(conn.target != void 0) {
+		if(conn.elementClicked != void 0) {
 			conn.decorateClearCandidate();
 			conn.funcConnect();
 			conn.funcRearrange();
-			conn.target = void 0;/*ドラッグ中のnode*/
+			conn.elementClicked = void 0;/*ドラッグ中のnode*/
 		}
 
 	},false);
@@ -66,10 +66,11 @@ window.addEventListener('mousemove',(event)=>{
 	if(gElement != void 0) {
 		gElement.style.left = (gLeft + gXMove - gXDown ).toString() + 'px';
 		gElement.style.top = (gTop + gYMove - gYDown ).toString() + 'px';
+		console.log('boolean',gElement == conn.elementClicked);
+		conn.arrangeTreeClicked();
 		conn.nearest(gElement);
 	}
 	event.preventDefault();
-
 },false);
 })();
 
