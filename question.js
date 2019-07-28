@@ -13,6 +13,7 @@ function shuffle(parent) {
 			parent.insertBefore(newNode,referenceNode);
 		},10);
 	}
+	return len*4*10;
 
 };
 

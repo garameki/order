@@ -126,10 +126,10 @@ function start() {
 		ePlates.appendChild(ele2);
 		ii++;
 	}
-	shuffle(ePlates);
+	const timeToShuffle = shuffle(ePlates);
 	const fuga = setTimeout(()=>{
 		conn = new Connection(ePlates);
-	},2500);
+	},timeToShuffle+100);
 
 };
 
