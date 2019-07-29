@@ -17,6 +17,7 @@
 let gElement = void 0;
 let gXDown,gYDown;
 let gYMove,gXMove;
+let gScrollX,gScrollY;
 myPlate = { };
 
 Object.defineProperty(myPlate,'new',{value:fNew,configurable:false});
@@ -35,6 +36,7 @@ function fNew() {
 
 			gLeft = Number(gElement.style.left.match(/[-]?\d+(?:\.\d+)?/)[0]);
 			gTop = Number(gElement.style.top.match(/[-]?\d+(?:\.\d+)?/)[0]);
+			gScrollX = window.scrollX;
 			gScrollY = window.scrollY;
 
 		}
@@ -44,7 +46,8 @@ function fNew() {
 		connectNone.call(conn);
 		
 	},false);
-	element.addEventListener('mouseup',(event)=>{
+	window.addEventListener('mouseup',(event)=>{
+		let ele;
 		gElement = void 0;
 
 		if(conn.elementClicked != void 0) {
@@ -53,11 +56,12 @@ function fNew() {
 			conn.funcRearrange();
 			conn.elementClicked = void 0;/*ドラッグ中のnode*/
 			if(check(conn)) {
-				const ele = document.createElement('div');
+				ele = document.createElement('div');
 				document.getElementsByTagName('body')[0].appendChild(ele);
 				ele.innerText = '正解です';
 				ele.style.color = 'white';
-			};
+			}
+			score.call(conn);
 		}
 
 	},false);
@@ -66,11 +70,14 @@ function fNew() {
 
 function reposition() {
 
-	gElement.style.left = (gLeft + gXMove - gXDown ).toString() + 'px';
-	gElement.style.top = (window.scrollY - gScrollY + gTop + gYMove - gYDown ).toString() + 'px';
-	console.log('boolean',gElement == conn.elementClicked);
-	conn.arrangeTreeClicked();
-	conn.nearest(gElement);
+	if(gElement != void 0) {
+
+		gElement.style.left = (window.scrollX - gScrollX + gLeft + gXMove - gXDown ).toString() + 'px';
+		gElement.style.top = (window.scrollY - gScrollY + gTop + gYMove - gYDown ).toString() + 'px';
+		console.log('boolean',gElement == conn.elementClicked);
+		conn.arrangeTreeClicked();
+		conn.nearest(gElement);
+	}
 
 };
 /*gXMove,gYMoveはglobalではないので、()();の中に置きます*/
@@ -78,6 +85,8 @@ window.addEventListener('mousemove',(event)=>{
 	gXMove = event.clientX;
 	gYMove = event.clientY;
 
+	if(gXMove < 0) gXMove = 0;
+	if(gYMove < 0) gYMove = 0;
 	if(gElement != void 0) {
 		reposition();
 	}
@@ -110,6 +119,13 @@ function start() {
 	eNext.innerText = '  次回';
 	eNext.href = (htmlNumber + 1).toString() + '.html';
 	eBody.appendChild(eNext);
+	const eAnswer = document.createElement('button');
+	eAnswer.innerText = '解答';
+	eBody.appendChild(eAnswer);
+	eAnswer.addEventListener('click',(event)=>{
+		answer.call(conn);
+		event.stopPropagation();
+	},false);
 
 	let ele2;
 	let ii = 0;
@@ -129,6 +145,7 @@ function start() {
 	const timeToShuffle = shuffle(ePlates);
 	const fuga = setTimeout(()=>{
 		conn = new Connection(ePlates);
+		score.call(conn);
 	},timeToShuffle+100);
 
 };

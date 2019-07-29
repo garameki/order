@@ -18,7 +18,6 @@ const Connection = function(parent) {
 
 	/*リスト構造の生成*/
 	const collection = parent.children;
-	console.log(collection);
 	const len = collection.length;
 	for(let ii=0;ii<len;ii++) {
 
@@ -41,7 +40,6 @@ Connection.prototype.accompany = function(node) {
 		string += target.nextNode.innerText + ' ';
 		target = target.nextNode;
 	}
-	console.log("connection:",string);
 
  };
  Connection.prototype.detouch = function(node) {
@@ -177,7 +175,6 @@ Connection.prototype.arrangeTreeClicked = function() {
 	let sumHeight = target.offsetHeight;
 	target = target.nextNode;
 	while(target != void 0) {
-		console.log(target.innerText);
 		target.style.left = this.elementClicked.style.left.match(re)[0]+ 'px';
 		target.style.top = (Number(this.elementClicked.style.top.match(re)[0])-target.originY + this.elementClicked.originY + sumHeight).toString() + 'px';
 		sumHeight += target.offsetHeight;
@@ -219,7 +216,6 @@ function rearrangeTop() {
 			}
 		}
 	}
-	console.log('rearrange');
 };
 function rearrangeBottom() {
 
@@ -238,7 +234,6 @@ function rearrangeBottom() {
 			target = target.nextNode;
 		}
 	}
-	console.log('rearrange');
 };
 
 /*ツリーの結合と分離関係*/
@@ -271,7 +266,6 @@ function getHeads() {
 	for(let node of this.parent.children) {
 		target = node;
 		while(target.frontNode != void 0) {
-			console.log(target.innerText);
 			target = target.frontNode;
 		}
 		if(heads.indexOf(target) == -1) heads.push(target);

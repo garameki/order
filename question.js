@@ -8,7 +8,6 @@ function shuffle(parent) {
 			if(++count > len*4) clearInterval(hoge);
 			referenceNode = parent.children[0];
 			nn = Math.abs(Math.round(Math.random() * parent.children.length - 0.5));
-			console.log(nn);
 			newNode = parent.children[nn];
 			parent.insertBefore(newNode,referenceNode);
 		},10);
@@ -36,4 +35,59 @@ function check(oConnection) {
 		}
 		return flag;
 	} else return false;
+};
+
+function score() {
+	let point = 0;
+	
+	let myNum;
+	const len = this.parent.children.length;
+	let ele;
+	for(let target of this.parent.children) {
+		myNum = Number(target.id.match(re)[0]);
+		if(myNum > 0) {
+			ele = target.frontNode;
+			while(ele != void 0) {
+				if(myNum-1 == Number(ele.id.match(re)[0])) {
+					point++;
+					break;
+				}
+				ele = ele.frontNode;
+			}
+		}
+		if(myNum < len-1) {
+			ele = target.nextNode;
+			while(ele != void 0) {
+				if(myNum+1 == Number(ele.id.match(re)[0])) {
+					point++;
+					break;
+				}
+				ele = ele.nextNode;
+			}
+		}
+	}
+	const ten = Math.round((point)/(len*2 - 2)*100);
+	ele = document.getElementById('score');
+	if(ele == void 0) {
+		ele = document.createElement('div');
+		ele.id = 'score';
+		ele.style.position = 'fixed';
+		ele.style.backgroundColor = 'white';
+		ele.style.top = '0px';
+		ele.style.left = (window.innerWidth/2).toString() + 'px';
+		document.getElementsByTagName('body')[0].appendChild(ele);
+	}
+	ele.style.zIndex = '300000';
+	ele.innerText = ten.toString();
+};
+
+function answer() {
+		const len = this.parent.children.length;
+		console.log(len);
+		let ele;
+		for(let ii=0;ii<len;ii++) {
+			ele = document.getElementById('node' + ii.toString());
+			ele.innerText = htmlCards[ii][0] +'  '+ htmlCards[ii][1];
+			ele.style.width = '300px';
+		}
 };
