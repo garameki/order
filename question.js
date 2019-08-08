@@ -88,6 +88,23 @@ function answer() {
 		for(let ii=0;ii<len;ii++) {
 			ele = document.getElementById('node' + ii.toString());
 			ele.innerText = htmlCards[ii][0] +'  '+ htmlCards[ii][1];
-			ele.style.width = '300px';
+			ele.style.width = '500px';
 		}
 };
+
+function timer() {
+	let ele = document.getElementById('timer');
+	if(ele == void 0) {
+		ele = document.createElement('span');
+		document.getElementsByTagName('body')[0].appendChild(ele);
+		ele.style.backgroundColor = 'white';
+		ele.style.color = 'black';
+	}
+	ele.style.position = 'fixed';
+	ele.style.top = '0px';
+	ele.style.left = '800px';
+	ele.innerText = hogeTimeCount;
+};
+
+
+	

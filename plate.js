@@ -60,6 +60,7 @@ function fNew() {
 				document.getElementsByTagName('body')[0].appendChild(ele);
 				ele.innerText = '正解です';
 				ele.style.color = 'white';
+				clearInterval(hogeTime);
 			}
 			score.call(conn);
 		}
@@ -101,6 +102,8 @@ window.addEventListener('scroll',(event)=>{
 })();
 
 let conn;
+let hogeTimeCount = 0;
+let hogeTime = void 0;
 function start() {
 
 	const eBody = document.getElementsByTagName('body')[0]; 
@@ -113,12 +116,24 @@ function start() {
 		const ePre = document.createElement('a');
 		ePre.innerText = '前回  ';
 		ePre.href = (htmlNumber - 1).toString() + '.html';
+		ePre.style.backgroundColor = 'white';
+		ePre.style.color = 'black';
 		eBody.appendChild(ePre);
+		ePre.style.position = 'fixed';
+		ePre.style.zIndex = '300000';
+		ePre.style.top = '0px';
+		ePre.style.left = (window.innerWidth-50).toString() + 'px';
 	}
 	const eNext = document.createElement('a');
 	eNext.innerText = '  次回';
 	eNext.href = (htmlNumber + 1).toString() + '.html';
+	eNext.style.backgroundColor = 'white';
+	eNext.style.color = 'black';
 	eBody.appendChild(eNext);
+	eNext.style.position = 'fixed';
+	eNext.style.zIndex = '300000';
+	eNext.style.top = '0px';
+	eNext.style.left = (window.innerWidth-100).toString() + 'px';
 	const eAnswer = document.createElement('button');
 	eAnswer.innerText = '解答';
 	eBody.appendChild(eAnswer);
@@ -134,7 +149,7 @@ function start() {
 		ele2.id = 'node' + ii.toString();
 		ele2.innerText = htmlCards[ii][0];
 		ele2.style.color = 'white';
-		ele2.style.width = '200px';
+		ele2.style.width = '300px';
 		ele2.style.border = 'solid 1px white';
 		ele2.style.padding = '5px';
 		ele2.style.backgroundColor = 'black';
@@ -148,6 +163,11 @@ function start() {
 		score.call(conn);
 	},timeToShuffle+100);
 
+	hogeTime = setInterval(()=>{
+console.log('timer');
+		timer();
+		hogeTimeCount++;
+	},1000);
 };
 
 
